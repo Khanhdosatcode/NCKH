@@ -1,0 +1,74 @@
+import java.io.*;
+import java.net.*;
+
+class TCPServer {
+    public static void main(String argv[]) throws Exception {
+        String clientSentence;
+        String[] operands;
+        int a, b, add, sub, mul;
+        double div;
+        ServerSocket welcomeSocket = new ServerSocket(12345);
+
+        while (true) {
+            Socket connectionSocket = welcomeSocket.accept();
+            BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+            DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
+
+            clientSentence = inFromClient.readLine();
+            operands = clientSentence.split(",");
+            a = Integer.parseInt(operands[0]);
+            b = Integer.parseInt(operands[1]);
+
+            add = a + b;
+            sub = a - b;
+            mul = a * b;
+            if (b != 0) {
+                div = (double) a / b;
+            } else {
+                div = Double.NaN;
+            }
+
+            String result = String.format("Addition: %d\nSubtraction: %d\nMultiplication: %d", add, sub, mul);
+            if (!Double.isNaN(div)) {
+                result += String.format("\nDivision: %.2f", div);
+            }
+
+            outToClient.writeBytes(result + '\n');
+            connectionSocket.close();
+        }
+    }
+}
+
+
+
+
+import java.io.*;
+import java.net.*;
+
+class TCPClient {
+    public static void main(String argv[]) throws Exception {
+        String a, b;
+        String sentence;
+        String modifiedSentence;
+        BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
+        Socket clientSocket = new Socket("localhost", 12345);
+        DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+        BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
+        System.out.print("Enter the first number: ");
+        a = inFromUser.readLine();
+        System.out.print("Enter the second number: ");
+        b = inFromUser.readLine();
+
+        sentence = a + "," + b;
+        outToServer.writeBytes(sentence + '\n');
+        modifiedSentence = inFromServer.readLine();
+
+        System.out.println("FROM SERVER: ");
+        System.out.println(modifiedSentence);
+
+        clientSocket.close();
+    }
+}
+
+
